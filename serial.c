@@ -1,5 +1,7 @@
-
 #include <stdio.h>
+#include <string.h>
+#include <stdio.h>
+#include <unistd.h>
 #include <termios.h>    // POSIX terminal control definitions
 #include <sys/file.h>
 #include <sys/types.h>
@@ -9,94 +11,87 @@
 #define BUFFER_SIZE 2048
 #define UART_SPEED B1152000
 
+int set_interface_attribs (int fd, int speed, int parity)
+{
+        struct termios tty;
+        if (tcgetattr (fd, &tty) != 0)
+        {
+                return 1; 
+        }
+
+        cfsetospeed (&tty, speed);
+        cfsetispeed (&tty, speed);
+
+        tty.c_cflag = (tty.c_cflag & ~CSIZE) | CS8;     // 8-bit chars
+        // disable IGNBRK for mismatched speed tests; otherwise receive break
+        // as \000 chars
+        tty.c_iflag &= ~IGNBRK;         // disable break processing
+        tty.c_lflag = 0;                // no signaling chars, no echo,
+                                        // no canonical processing
+        tty.c_oflag = 0;                // no remapping, no delays
+        tty.c_cc[VMIN]  = 0;            // read doesn't block
+        tty.c_cc[VTIME] = 5;            // 0.5 seconds read timeout
+
+        tty.c_iflag &= ~(IXON | IXOFF | IXANY); // shut off xon/xoff ctrl
+
+        tty.c_cflag |= (CLOCAL | CREAD);// ignore modem controls,
+                                        // enable reading
+        tty.c_cflag &= ~(PARENB | PARODD);      // shut off parity
+        tty.c_cflag |= parity;
+        tty.c_cflag &= ~CSTOPB;
+        tty.c_cflag &= ~CRTSCTS;
+
+        if (tcsetattr (fd, TCSANOW, &tty) != 0)
+        {
+                return 1; //
+        }
+        return 0;
+}
+
+int set_blocking (int fd, int should_block)
+{
+    struct termios tty;
+    memset (&tty, 0, sizeof tty);
+    if (tcgetattr (fd, &tty) != 0)
+        return 1;
+
+    tty.c_cc[VMIN]  = should_block ? 1 : 0;
+    tty.c_cc[VTIME] = 5;            // 0.5 seconds read timeout
+
+    if (tcsetattr (fd, TCSANOW, &tty) != 0)
+        return 1;
+}
+
+
 int main(void) {
     int fd;
-    unsigned char   dev_UART_TOUCH[] = "/dev/ttyACM5";
+    unsigned char   dev_UART_TOUCH[] = "/dev/ttyACM0";
     unsigned char rx_buffer[BUFFER_SIZE];
     int res;
     int ct=0;
     struct termios uart_settings;
 
     fd = open(dev_UART_TOUCH, O_RDWR);      //讀寫模式開啟
-    if (fd==-1)
+    if (fd < 0)
     {
-        printf("Error opening\n");
-        return -1;
+        printf("Can't open device %s.\n", dev_UART_TOUCH);
+        return 1;
     }
-    else
-    {
-        printf("sucess opening\n");
-    }
-    //用來取得目前的串列埠參數值。
-    tcgetattr(fd, &uart_settings);
 
-    //=========================輸入模式===============================
-    // 串列埠忽略同位錯誤，接收傳入的字元
-    uart_settings.c_iflag = IGNPAR;
-    //================================================================
-
-
-    //=========================輸出模式===============================
-    //若要啟動輸出處理，必須加入OPOST選項，程式碼如下：
-    //options.c_oflag |= OPOST;
-    //將換列字元轉換成[CR][LF]
-    //options.c_oflag |= OPOST | ONLCR;
-    //若要啟動非正規模式，將OPOST選項設為disable，設定如下：
-    uart_settings.c_oflag &= ~OPOST;
-    //================================================================
-
-
-    //=========================控制模式===============================
-    // 將波特率設定為115200bps。
-    uart_settings.c_cflag = UART_SPEED | CLOCAL | CREAD;
+    set_interface_attribs (fd, B115200, 0);  // set speed to 115,200 bps, 8n1 (no parity)
+    set_blocking (fd, 0);                // set no blockin
     
-    // 設定(8N1)傳輸資料長度8位元、無同位元檢查、1停止位元：
-    uart_settings.c_cflag |= ~PARENB;     //不允許同位元檢查
-    uart_settings.c_cflag |= ~CSTOPB;     //不是2停止位元
-    uart_settings.c_cflag |= CS8;             //8 bits
-
-    //將串列埠設定為正規模式
-    uart_settings.c_lflag |= (ICANON | ECHO | ECHOE);
-    //================================================================
-
-    
-    
-    //=========================特殊控制字元============================
-    // 組合                 說明
-    // MIN=0, TIME = 0      以read()函數讀取串列埠後立即返回，若讀取到字元則傳回字元，否則傳回0。
-    // MIN=0, TIME > 0      以read()函數讀取串列埠後，會在TIME時間內等待第一個字元。若有字元傳入或時間到，立即返回。若讀取到字元則傳回字元，否則傳回0。
-    // MIN > 0, TIME = 0	以read()函數讀取串列埠後會等待資料傳入，若有MIN個字元可讀取，傳回讀取的字元數。
-    // MIN > 0, TIME > 0	以read()函數讀取串列埠後，會等待資料的傳入。若有MIN個字元可讀取時，傳回讀取到的字元數。若TIME的時間到，則read()傳回0。
-    uart_settings.c_cc[VTIME] = 0;
-    uart_settings.c_cc[VMIN] = 0;
-    //================================================================
-
-
-    cfsetispeed(&uart_settings,UART_SPEED);   //傳回串列埠的輸入速率
-    cfsetospeed(&uart_settings,UART_SPEED);   //設定串列埠的輸入速度
-
-    // 執行後使用fp指向的termios資料結構，重新設定檔案描述子fd，其中引數action可以是下列的值
-    // action值         說明
-    // TCSANOW          立即將值改變
-    // TCSADRAIN        當目前輸出完成時，將值改變
-    // TCSAFLUSH        當目前輸出完成時，將值改變；並捨棄目前所有的輸入。
-    tcsetattr(fd, TCSANOW, &uart_settings);
-
-    // 清除所有佇列在串列埠的輸入和輸出。    
-    // queue值      說明
-    // TCIFLUSH     清除輸入
-    // TCOFLUSH     清除輸出
-    // TCIOFLUSH    清除輸入和輸出
-	tcflush(fd, TCIFLUSH);
-    
+    usleep ((7 + 25) * 100);             // sleep enough to transmit the 7 plus
+                                         // receive 25:  approx 100 uS per char transmit
     printf("start print\n");
     
     while(1){
         res = read(fd, rx_buffer, BUFFER_SIZE);
-        //printf("res[%04d]\n", res);
-        rx_buffer[res] = 0;
-        printf("res=%d buf=%s\n", res, rx_buffer);
-        if (rx_buffer[0] == '@') break;
+        printf("res[%04d]\n", res);
+        for (int i = 0; i < res; i++){
+            printf("%x ", rx_buffer[i]);
+        }
+
     }
 
     close(fd);
