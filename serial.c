@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <unistd.h>
 #include <termios.h> // POSIX terminal control definitions
 #include <sys/file.h>
@@ -44,35 +45,11 @@ void push(unsigned char a)
 
 unsigned char pop()
 {
-	
 	Queue_Node *pt = front;
 	unsigned char i = front->data;
 	front = front->next;
 	free(pt);
 	return i;
-}
-
-int isEmpty()
-{
-	if (front == NULL)
-		return 1;
-	else
-		return 0;
-}
-
-unsigned char getFront()
-{
-	return front->data;
-}
-
-unsigned char getTail()
-{
-	return tail->data;
-}
-
-int getSize()
-{
-	return size;
 }
 
 int set_interface_attribs(int fd, int speed, int parity)
@@ -134,6 +111,11 @@ int main(void)
 	int res;
 	int ct = 0;
 	struct termios uart_settings;
+	u_int8_t dataCommand;
+	int commandState = 0;
+	int count = 0;
+	u_int16_t block[24];
+	int blockCount = 0;
 
 	fd = open(dev_UART_TOUCH, O_RDWR); //讀寫模式開啟
 	if (fd < 0)
@@ -155,7 +137,6 @@ int main(void)
 		{
 			for (int i = 0; i < res; i++)
 			{
-				// printf("%x\t", rx_buffer[i]);
 				push(rx_buffer[i]);
 				
 			}
@@ -164,7 +145,52 @@ int main(void)
 
 		while (front != NULL)
 		{
-			printf("%x\t", pop());
+			dataCommand = pop();
+			switch (commandState)
+			{
+				case 0:
+					if(dataCommand == 0x12)
+					{
+						commandState = 1;
+					}
+					break;
+				case 1:
+					if(dataCommand == 0x34)
+					{
+						commandState = 2;
+						system("clear");;;;;
+					}
+					break;
+				case 2:
+					
+					if(count%12 == 0) printf("\n");
+					
+
+					if(count%2 == 0)
+					{
+						block[blockCount] = dataCommand;
+					}						
+					else
+					{
+						block[blockCount] |= (dataCommand << 8);
+						printf("[%2d] %5u\t", blockCount, block[blockCount]);
+						blockCount++;
+					}
+
+					count++;
+					if(count == 48)
+					{
+						count = 0;
+						commandState = 0;
+						blockCount = 0;
+					}
+					
+					break;
+
+				default:
+					break;
+			}
+
 		}
 		
 	}
