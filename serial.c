@@ -10,6 +10,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+#include "displayLCD.c"
+
 struct Node
 {
 	unsigned char data;
