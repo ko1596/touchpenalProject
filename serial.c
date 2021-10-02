@@ -4,13 +4,13 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <unistd.h>
+#include <pthread.h>
 #include <termios.h> // POSIX terminal control definitions
 #include <sys/file.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-
-#include "displayLCD.c"
+#include "displayLCD.h"
 
 struct Node
 {
@@ -118,6 +118,10 @@ int main(void)
 	int count = 0;
 	u_int16_t block[24];
 	int blockCount = 0;
+	int displayed = 0;
+	int displayLock = 1;
+	pthread_t t; // 宣告 pthread 變數
+	initLCD();
 
 	fd = open(dev_UART_TOUCH, O_RDWR); //讀寫模式開啟
 	if (fd < 0)
@@ -154,18 +158,20 @@ int main(void)
 					if(dataCommand == 0x12)
 					{
 						commandState = 1;
+						displayed = 1;
+						// usleep(500000); //  	0.5s
+						// system("clear"); //*nix
 					}
 					break;
 				case 1:
 					if(dataCommand == 0x34)
 					{
 						commandState = 2;
-						system("clear");;;;;
 					}
 					break;
 				case 2:
 					
-					if(count%12 == 0) printf("\n");
+					// if(count%12 == 0) printf("\n");
 					
 
 					if(count%2 == 0)
@@ -175,7 +181,7 @@ int main(void)
 					else
 					{
 						block[blockCount] |= (dataCommand << 8);
-						printf("[%2d] %5u\t", blockCount, block[blockCount]);
+						// printf("[%2d] %5u\t", blockCount, block[blockCount]);
 						blockCount++;
 					}
 
@@ -194,6 +200,13 @@ int main(void)
 			}
 
 		}
+		// printf("displayed %d lock %d\n",displayed,lock);
+		if(displayed&&lock)
+		{
+			lock = 0;
+			pthread_create(&t, NULL, (void *)&displayFrame, (void *)&block[0]);
+		}
+			
 		
 	}
 

@@ -1,29 +1,4 @@
-#include <stdint.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <getopt.h>
-#include <fcntl.h>
-#include <time.h>
-#include <sys/ioctl.h>
-#include <linux/ioctl.h>
-#include <linux/input.h>
-#include <sys/stat.h>
-#include <linux/types.h>
-#include <linux/spi/spidev.h>
-#include <linux/gpio.h>
-#include "gpio_dev.h"
-#include "spi_8MM_driver.h"
-
-
-
-#define ROW_BYTE_NUM (1600 * 3)
-
-#define GPIO_DCX 6
-#define GPIO_RESX 7
-#define GPIO_CSX 8
-
+#include "displayLCD.h"
 
 void LCD_WrCmd(unsigned char cmd)
 {
@@ -198,38 +173,57 @@ void LCD_Image(unsigned char data[])
 	
 }
 
-int main(int argc, char **argv)
+void displayFrame(void *parm)
 {
+	u_int16_t *block = (u_int16_t*) parm; // 取得輸入資料
+	
+	printf("inthread\n");
 	unsigned char rgb[3] = {0x00, 0x00, 0xFF};
 	unsigned char *buf;
 	FILE *fp;
-	spidev_init();
-	LCD_Init();
-	gpio_SetValue(GPIO_CSX, GPIO_VALUE_LOW);
+	char path[1024] = "python3 frame.py";
+	char convert[100];
+	for (int i = 0; i < 24; i++)
+	{
+		sprintf(convert," %u", block[i]);
+		strcat(path, convert);
+	}
+
+	
+	printf("\n\n%s\n\n",path);
+	
 
 	buf = malloc(sizeof(unsigned char) * 1600 * 1200 * 3);
 	if (buf == NULL)
 	{
 		printf("malloc error\n");
-		return 0;
+		pthread_exit(NULL);
 	}
 
-	while (1)
+	
+	system(path);
+	fp = fopen("frame.bmp", "rb");
+	if (fp == NULL)
 	{
-		system("python3 bus.py");
-		fp = fopen("time.bmp", "rb");
-		if (fp == NULL)
-		{
-			printf("open time.bmp file error\n");
-			return 0;
-		}
-		fseek(fp, 54, SEEK_SET);
-		fread(buf, sizeof(unsigned char), 1600 * 1200 * 3, fp);
-		fclose(fp);
-		printf("printing time.bmp...\n");
-		LCD_Image(buf);
-		// usleep(3000000); //  	3s
+		printf("open frame.bmp file error\n");
+		pthread_exit(NULL);
 	}
-
+	fseek(fp, 54, SEEK_SET);
+	fread(buf, sizeof(unsigned char), 1600 * 1200 * 3, fp);
+	fclose(fp);
+	printf("printing frame.bmp...\n");
+	LCD_Image(buf);
+	
+	
 	free(buf);
+	printf("thread end\n");
+	
+	lock = 1;
+}
+
+void initLCD() {
+	spidev_init();
+	LCD_Init();
+	gpio_SetValue(GPIO_CSX, GPIO_VALUE_LOW);
+	lock = 1;
 }
