@@ -1,5 +1,5 @@
 import numpy as np
-from PIL import ImageFont, ImageDraw, Image
+# from PIL import ImageFont, ImageDraw, Image
 import cv2
 import sys
 
@@ -41,11 +41,11 @@ for i in sys.argv[1:]:
         y = y + 1
     
 
-fontpath = "./NotoSansCJKtc-Light.otf"
-font = ImageFont.truetype(fontpath, 200) 
-img_pil = Image.fromarray(img)
-draw = ImageDraw.Draw(img_pil)
-# draw.text((500, 500),  "aaaa", font = font, fill = (0, 0, 0, a))
-img = np.array(img_pil)
+# fontpath = "./NotoSansCJKtc-Light.otf"
+# font = ImageFont.truetype(fontpath, 200) 
+# img_pil = Image.fromarray(img)
+# draw = ImageDraw.Draw(img_pil)
+# # draw.text((500, 500),  "aaaa", font = font, fill = (0, 0, 0, a))
+# img = np.array(img_pil)
 
 cv2.imwrite("frame.bmp", img)

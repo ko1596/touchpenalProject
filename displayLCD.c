@@ -167,7 +167,7 @@ void LCD_Image(unsigned char data[])
 		trd[count++] = 0x00;
 		trd[count++] = 0x00;
 	}
-	printf("count: %d\n", count);
+	// printf("count: %d\n", count);
 	LCD_WrCmd(0x2C);
 	transfer_pixel(&trd[0]);
 	
@@ -190,7 +190,7 @@ void displayFrame(void *parm)
 	}
 
 	
-	printf("\n\n%s\n\n",path);
+	// printf("\n\n%s\n\n",path);
 	
 
 	buf = malloc(sizeof(unsigned char) * 1600 * 1200 * 3);
@@ -216,7 +216,7 @@ void displayFrame(void *parm)
 	
 	
 	free(buf);
-	printf("thread end\n");
+	// printf("thread end\n");
 	
 	lock = 1;
 }
