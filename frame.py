@@ -21,4 +21,4 @@ for i in sys.argv[1:]:
     
 
 img = img[::-1]
-cv2.imwrite("frame.bmp", img)
+cv2.imwrite("frame.png", img)
