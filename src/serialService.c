@@ -1,16 +1,5 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdio.h>
-#include <stdint.h>
-#include <unistd.h>
-#include <pthread.h>
-#include <termios.h> // POSIX terminal control definitions
-#include <sys/file.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include "displayLCD.h"
+
+#include "serialService.h"
 
 struct Node
 {
@@ -82,7 +71,7 @@ int set_interface_attribs(int fd, int speed, int parity)
 	tty.c_cflag &= ~(PARENB | PARODD); // shut off parity
 	tty.c_cflag |= parity;
 	tty.c_cflag &= ~CSTOPB;
-	tty.c_cflag &= ~CRTSCTS;
+	// tty.c_cflag &= ~CRTSCTS;
 
 	if (tcsetattr(fd, TCSANOW, &tty) != 0)
 	{
