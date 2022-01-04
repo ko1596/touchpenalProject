@@ -1,26 +1,35 @@
 
 #include "serialService.h"
 
-struct Node
-{
-	unsigned char data;
-	struct Node *next;
-};
+void initQueue(void) {
+	front = NULL;
+	tail = NULL;
+	commandState = 0;
+	count = 0;
+	blockCount = 0;
+}
 
-typedef struct Node Queue_Node;
-Queue_Node *front = NULL;
-Queue_Node *tail = NULL;
-int size = 0;
+void initUart(int *fd) {
+	*fd = open(UART_TOUCHPAD, O_RDWR); //讀寫模式開啟
+	if (*fd < 0)
+	{
+		printf("Can't open device %s.\n", UART_TOUCHPAD);
+		return 1;
+	}
 
-#define BUFFER_SIZE 2048
-#define UART_SPEED B1152000
+	set_interface_attribs(*fd, B115200, 0); // set speed to 115,200 bps, 8n1 (no parity)
+	set_blocking(*fd, 0);				   // set no blockin
 
-void push(unsigned char a)
+	usleep((7 + 25) * 100); // sleep enough to transmit the 7 plus
+							// receive 25:  approx 100 uS per char transmit
+}
+
+void push(uint8_t data)
 {
 	Queue_Node *new_add_node;
 	new_add_node = (Queue_Node *)malloc(sizeof(struct Node));
 	
-	new_add_node->data = a;
+	new_add_node->data = data;
 	new_add_node->next = NULL;
 
 	if (tail == NULL||front==NULL)
@@ -34,10 +43,10 @@ void push(unsigned char a)
 	tail = new_add_node;
 }
 
-unsigned char pop()
+uint8_t pop()
 {
 	Queue_Node *pt = front;
-	unsigned char i = front->data;
+	uint8_t i = front->data;
 	front = front->next;
 	free(pt);
 	return i;
@@ -94,109 +103,65 @@ int set_blocking(int fd, int should_block)
 		return 1;
 }
 
-int main(void)
+void readTouchpad(int fd) {
+	int res;
+	uint8_t rx_buffer[BUFFER_SIZE];
+
+	res = read(fd, rx_buffer, BUFFER_SIZE);
+
+	for (int i = 0; i < res; i++)
+		push(rx_buffer[i]);
+}
+
+void processBlockData(void) {
+	u_int8_t dataCommand;
+
+	while (front != NULL) {
+		dataCommand = pop();
+		switch (commandState)
+		{
+			case 0:
+				if(dataCommand == 0x12) commandState = 1;
+				break;
+			case 1:
+				if(dataCommand == 0x34) commandState = 2;
+				break;
+			case 2:
+				if(count%2 == 0)
+				{
+					block[blockCount] = dataCommand;
+				}						
+				else
+				{
+					block[blockCount] |= (dataCommand << 8);
+					blockCount++;
+				}
+
+				count++;
+				if(count == 48)
+				{
+					count = 0;
+					commandState = 0;
+					blockCount = 0;
+				}
+				break;
+
+			default:
+				break;
+		}
+	}
+}
+
+void *UartLoop(void * parm)
 {
 	int fd;
-	unsigned char dev_UART_TOUCH[] = "/dev/ttyACM0";
-	unsigned char rx_buffer[BUFFER_SIZE];
-	int res;
-	int ct = 0;
-	struct termios uart_settings;
-	u_int8_t dataCommand;
-	int commandState = 0;
-	int count = 0;
-	u_int16_t block[24];
-	int blockCount = 0;
-	int displayed = 0;
-	int displayLock = 1;
-	pthread_t t; // 宣告 pthread 變數
-	initLCD();
-
-	fd = open(dev_UART_TOUCH, O_RDWR); //讀寫模式開啟
-	if (fd < 0)
-	{
-		printf("Can't open device %s.\n", dev_UART_TOUCH);
-		return 1;
-	}
-
-	set_interface_attribs(fd, B115200, 0); // set speed to 115,200 bps, 8n1 (no parity)
-	set_blocking(fd, 0);				   // set no blockin
-
-	usleep((7 + 25) * 100); // sleep enough to transmit the 7 plus
-							// receive 25:  approx 100 uS per char transmit
+	
+	initUart(&fd);
 
 	while (1)
 	{
-		res = read(fd, rx_buffer, BUFFER_SIZE);
-		if (res > 0)
-		{
-			for (int i = 0; i < res; i++)
-			{
-				push(rx_buffer[i]);
-				
-			}
-		}
-		
-
-		while (front != NULL)
-		{
-			dataCommand = pop();
-			switch (commandState)
-			{
-				case 0:
-					if(dataCommand == 0x12)
-					{
-						commandState = 1;
-						displayed = 1;
-						// usleep(500000); //  	0.5s
-						// system("clear"); //*nix
-					}
-					break;
-				case 1:
-					if(dataCommand == 0x34)
-					{
-						commandState = 2;
-					}
-					break;
-				case 2:
-					
-					// if(count%12 == 0) printf("\n");
-					
-
-					if(count%2 == 0)
-					{
-						block[blockCount] = dataCommand;
-					}						
-					else
-					{
-						block[blockCount] |= (dataCommand << 8);
-						// printf("[%2d] %5u\t", blockCount, block[blockCount]);
-						blockCount++;
-					}
-
-					count++;
-					if(count == 48)
-					{
-						count = 0;
-						commandState = 0;
-						blockCount = 0;
-					}
-					
-					break;
-
-				default:
-					break;
-			}
-
-		}
-		// printf("displayed %d lock %d\n",displayed,lock);
-		if(displayed&&lock)
-		{
-			lock = 0;
-			pthread_create(&t, NULL, (void *)&displayFrame, (void *)&block[0]);
-		}
-			
-		
+		readTouchpad(fd);
+		processBlockData();
 	}
 
 	close(fd);

@@ -14,4 +14,44 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+#define BUFFER_SIZE 2048
+#define UART_SPEED B1152000
+#define UART_TOUCHPAD "/dev/ttyACM0"
+
+struct Node
+{
+	uint8_t data;
+	struct Node *next;
+};
+
+typedef struct Node Queue_Node;
+
+Queue_Node *front;
+Queue_Node *tail;
+u_int16_t block[24];
+
+pthread_t serialThread;
+
+int commandState;
+int count;
+int blockCount;
+
+void initQueue(void);
+
+void initUart(int*);
+
+void push(uint8_t);
+
+uint8_t pop(void);
+
+int set_interface_attribs(int, int, int);
+
+int set_blocking(int, int);
+
+void readTouchpad(int);
+
+void processBlockData(void);
+
+void *UartLoop(void *);
+
 #endif /*SERIAL_SERVICE_H*/
