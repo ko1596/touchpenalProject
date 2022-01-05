@@ -5,7 +5,7 @@ import sys
 import os
 from PIL import ImageFont, ImageDraw, Image
 
-disign_platform = 0
+disign_platform = 1
 
 if disign_platform:
     WORK_DIR_PATH = "/home/root/touchPenalProject/"         #work dir
@@ -71,6 +71,28 @@ if sys.argv[1] != "0":
         selectBlockImg = cv2.imread(IMG_DIR_PATH + "SELECT_PARKING_SPACE.png", -1)
 
         pasteImg(img, selectBlockImg, int(selectBlockNum / 4) * 285 + 14, int(selectBlockNum % 4) * 130 + 14)
+        for i in range(8):
+            if sys.argv[i+3] == "0":
+                print("no image")
+            else:
+                
+                if sys.argv[i+3] == "1":
+                        showblock = cv2.imread(IMG_DIR_PATH + "WAITING_FOR_PAYMENT.png", -1)
+                elif sys.argv[i+3] == "2":
+                    showblock = cv2.imread(IMG_DIR_PATH + "expired.png", -1)
+                elif sys.argv[i+3] == "3":
+                    showblock = cv2.imread(IMG_DIR_PATH + "DEADLINE.png", -1)
+
+                pasteImg(img, showblock, int(i / 4) * 285 + 123, int(i % 4) * 130 + 46)
+            
+        font = ImageFont.truetype(FONT_PATH, 28)
+        img_pil = Image.fromarray(img)
+        draw = ImageDraw.Draw(img_pil)
+        text = sys.argv[11]
+        w, h = draw.textsize(text, font)
+        draw.text(((img.shape[1]-w)/2, (img.shape[0]-108)),  sys.argv[11], font = font, fill = (49, 49, 49, 0))
+        img = np.array(img_pil)
+            
 
 
     font = ImageFont.truetype(FONT_PATH, 30)
@@ -81,6 +103,7 @@ if sys.argv[1] != "0":
     w, h = draw.textsize(text, font)
 
     draw.text(((img.shape[1]-w)/2, (img.shape[0]-50)),  text, font = font, fill = (255, 255, 255, 0))
+    
 
     img = np.array(img_pil)
 

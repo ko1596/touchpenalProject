@@ -1,8 +1,14 @@
 #include "displayLCD.h"
 #include "gstService.h"
-#include "serialService.h"
+// #include "serialService.h"
 
-int main(int argc, char *argv[]) {
-    initLCD();
+int main() {
+    initGST();
+    PageStatus = 0;
+
+    generateFrame();
+    displayScreen();
+    sleep(6);
+    freeResources();
     return 0;
 }

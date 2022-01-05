@@ -33,18 +33,11 @@
 #define WORK_SPACE_DIR "python3 /home/root/touchPenalProject/frame.py "
 #define COMMAND_PATH "/home/root/touchPenalProject/"
 
-int lock;
-pthread_t displayThread; // 宣告 pthread 變數
+uint8_t PageStatus;
+char parkBK[8][1];
+uint8_t parkPage;
 
 
-
-void displayFrame(void *parm);
-void initLCD(void);
-
-/**
- * @brief Create a fork to display the page of the status
- * 
- */
-void *display(void *);
+void generateFrame(void);
 
  #endif /* DISPLAY_LCD_H */

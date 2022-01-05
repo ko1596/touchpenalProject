@@ -9,12 +9,12 @@ void initQueue(void) {
 	blockCount = 0;
 }
 
-void initUart(int *fd) {
+int initUart(int *fd) {
 	*fd = open(UART_TOUCHPAD, O_RDWR); //讀寫模式開啟
 	if (*fd < 0)
 	{
 		printf("Can't open device %s.\n", UART_TOUCHPAD);
-		return 1;
+		return -1;
 	}
 
 	set_interface_attribs(*fd, B115200, 0); // set speed to 115,200 bps, 8n1 (no parity)
@@ -22,6 +22,7 @@ void initUart(int *fd) {
 
 	usleep((7 + 25) * 100); // sleep enough to transmit the 7 plus
 							// receive 25:  approx 100 uS per char transmit
+	return 0;
 }
 
 void push(uint8_t data)
@@ -101,6 +102,8 @@ int set_blocking(int fd, int should_block)
 
 	if (tcsetattr(fd, TCSANOW, &tty) != 0)
 		return 1;
+
+	return 0;
 }
 
 void readTouchpad(int fd) {
@@ -152,7 +155,7 @@ void processBlockData(void) {
 	}
 }
 
-void *UartLoop(void * parm)
+void *UartLoop(void *parm)
 {
 	int fd;
 	

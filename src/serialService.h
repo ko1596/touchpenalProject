@@ -38,7 +38,7 @@ int blockCount;
 
 void initQueue(void);
 
-void initUart(int*);
+int initUart(int*);
 
 void push(uint8_t);
 
