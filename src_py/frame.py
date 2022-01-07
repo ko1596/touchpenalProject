@@ -5,7 +5,7 @@ import sys
 import os
 from PIL import ImageFont, ImageDraw, Image
 
-disign_platform = 1
+disign_platform = 0
 
 if disign_platform:
     WORK_DIR_PATH = "/home/root/touchPenalProject/"         #work dir
@@ -102,6 +102,42 @@ if sys.argv[1] != "0":
             selectedButtons = cv2.imread(IMG_DIR_PATH + "confirm_button.png", -1)
             pasteImg(img, selectedButtons, 678, 1269)
         
+    if sys.argv[1] == "7":
+        font = ImageFont.truetype(FONT_PATH, 40)
+        img_pil = Image.fromarray(img)
+        draw = ImageDraw.Draw(img_pil)
+        text = "$ "+ str(int(sys.argv[2])*4)
+        w, h = draw.textsize(text, font)
+        draw.text((275-w/2, (545)),  text, font = font, fill = (49, 49, 49, 0))
+        w, h = draw.textsize(sys.argv[3], font)
+        draw.text((575-w/2, (545)),  sys.argv[3], font = font, fill = (49, 49, 49, 0))
+        text = str(int(sys.argv[2])*0.5)
+        w, h = draw.textsize(text, font)
+        draw.text((895-w/2, (545)),  text, font = font, fill = (49, 49, 49, 0))
+        img = np.array(img_pil)
+
+        if sys.argv[4] == "1":
+            back_button = cv2.imread(IMG_DIR_PATH + "back.png", -1)
+            pasteImg(img, back_button, 458, 1315)
+
+    if sys.argv[1] == "8":
+        font = ImageFont.truetype(FONT_PATH, 40)
+        img_pil = Image.fromarray(img)
+        draw = ImageDraw.Draw(img_pil)
+        text = "$ "+ str(int(sys.argv[2])*4)
+        w, h = draw.textsize(text, font)
+        draw.text((275-w/2, (583)),  text, font = font, fill = (49, 49, 49, 0))
+        w, h = draw.textsize(sys.argv[3], font)
+        draw.text((575-w/2, (583)),  sys.argv[3], font = font, fill = (49, 49, 49, 0))
+        text = str(int(sys.argv[2])*0.5)
+        w, h = draw.textsize(text, font)
+        draw.text((895-w/2, (583)),  text, font = font, fill = (49, 49, 49, 0))
+        img = np.array(img_pil)
+
+        if sys.argv[4] == "1":
+            back_button = cv2.imread(IMG_DIR_PATH + "back.png", -1)
+            pasteImg(img, back_button, 458, 1284)
+
         
 
 
@@ -118,6 +154,13 @@ if sys.argv[1] != "0":
     draw.text((img.shape[1] - w - 20, (img.shape[0]-90)),  text, font = font, fill = (255, 255, 255, 0))
 
     img = np.array(img_pil)
+
+
+# for c in range(1, 4):
+#     cv2.line(img, (300 * c, 0), (300 * c, 1600), (0, 0, 255), 5)
+
+# for c in range(1, 6):
+#     cv2.line(img, (0, 267 * c), (1200, 267 * c), (0, 0, 255), 5)
 
 cv2.imwrite(GENERATED_IMG_NAME, img)
 
