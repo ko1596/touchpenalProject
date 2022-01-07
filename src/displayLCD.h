@@ -38,6 +38,11 @@ uint8_t parkBK[8];
 uint8_t parkPage;
 uint8_t selectedBlock;
 
+uint8_t parkingTime;
+uint8_t parkingSpace;
+uint8_t timeButtons;
+uint8_t selectButton;
+
 void generateFrame(void);
 
  #endif /* DISPLAY_LCD_H */

@@ -24,12 +24,25 @@ void generateFrame(void)
             strcat(buf, temp);
         }
         strcat(buf," 5");
+        break;
+
+    case 2:
+        strcat(buf, "2");
+        sprintf(temp, " %d", parkingTime);
+        strcat(buf, temp);
+        sprintf(temp, " %d", parkingSpace);
+        strcat(buf, temp);
+        sprintf(temp, " %d", timeButtons);
+        strcat(buf, temp);
+        sprintf(temp, " %d", selectButton);
+        strcat(buf, temp);
+        break;
     
     default:
         break;
     }
 
-    // printf("%s\n", buf);
+    printf("%s\n", buf);
     system(buf);
 }
 

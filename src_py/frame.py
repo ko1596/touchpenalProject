@@ -77,7 +77,32 @@ if sys.argv[1] != "0":
         w, h = draw.textsize(text, font)
         draw.text(((img.shape[1]-w)/2, (img.shape[0]-220)),  sys.argv[11], font = font, fill = (49, 49, 49, 0))
         img = np.array(img_pil)
-            
+    if sys.argv[1] == "2":
+        font = ImageFont.truetype(FONT_PATH, 100)
+        img_pil = Image.fromarray(img)
+        draw = ImageDraw.Draw(img_pil)
+        text = str(int(sys.argv[2])*0.5)
+        w, h = draw.textsize(text, font)
+        draw.text((775-w/2, (676)),  text, font = font, fill = (49, 49, 49, 0))
+        w, h = draw.textsize(sys.argv[3], font)
+        draw.text((775-w/2, (935)),  sys.argv[3], font = font, fill = (49, 49, 49, 0))
+        img = np.array(img_pil)
+
+        if sys.argv[4] == "1":
+            leftButton = cv2.imread(IMG_DIR_PATH + "decrease_button.png", -1)
+            pasteImg(img, leftButton, 580, 715)
+        elif sys.argv[4] == "2":
+            rightButton = cv2.imread(IMG_DIR_PATH + "increase_button.png", -1)
+            pasteImg(img, rightButton, 888, 715)
+
+        if sys.argv[5] == "1":
+            selectedButtons = cv2.imread(IMG_DIR_PATH + "back_button.png", -1)
+            pasteImg(img, selectedButtons, 250, 1269)
+        elif sys.argv[5] == "2":
+            selectedButtons = cv2.imread(IMG_DIR_PATH + "confirm_button.png", -1)
+            pasteImg(img, selectedButtons, 678, 1269)
+        
+        
 
 
     font = ImageFont.truetype(FONT_PATH, 55)
@@ -87,8 +112,10 @@ if sys.argv[1] != "0":
 
     w, h = draw.textsize(text, font)
 
-    draw.text(((img.shape[1]-w)/2, (img.shape[0]-90)),  text, font = font, fill = (255, 255, 255, 0))
-    
+    draw.text((20, (img.shape[0]-90)),  text, font = font, fill = (255, 255, 255, 0))
+    text = "00000001"
+    w, h = draw.textsize(text, font)
+    draw.text((img.shape[1] - w - 20, (img.shape[0]-90)),  text, font = font, fill = (255, 255, 255, 0))
 
     img = np.array(img_pil)
 
