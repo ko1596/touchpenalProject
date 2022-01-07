@@ -43,6 +43,8 @@ uint8_t parkingSpace;
 uint8_t timeButtons;
 uint8_t selectButton;
 
+uint8_t backButton;
+
 void generateFrame(void);
 
  #endif /* DISPLAY_LCD_H */
