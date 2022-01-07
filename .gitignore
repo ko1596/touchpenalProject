@@ -2,5 +2,4 @@
 *.o
 displayLCD_test
 *.bmp
-*.png
 *.jpg
