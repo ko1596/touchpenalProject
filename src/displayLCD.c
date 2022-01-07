@@ -46,7 +46,20 @@ void generateFrame(void)
         strcat(buf, temp);
         sprintf(temp, " %d", backButton);
         strcat(buf, temp);
+        break;
+
+    case 8:
+        strcat(buf, "8");
+        sprintf(temp, " %d", parkingTime);
+        strcat(buf, temp);
+        sprintf(temp, " %d", parkingSpace);
+        strcat(buf, temp);
+        sprintf(temp, " %d", backButton);
+        strcat(buf, temp);
+        break;
+
     
+
     default:
         break;
     }

@@ -138,6 +138,16 @@ if sys.argv[1] != "0":
             back_button = cv2.imread(IMG_DIR_PATH + "back.png", -1)
             pasteImg(img, back_button, 458, 1284)
 
+    if sys.argv[1] == "9":
+        if sys.argv[2] == "1":
+            back_button = cv2.imread(IMG_DIR_PATH + "back_to_main_screen.png", -1)
+            pasteImg(img, back_button, 438, 1300)
+    
+    if sys.argv[1] == "10":
+        if sys.argv[2] == "1":
+            back_button = cv2.imread(IMG_DIR_PATH + "back_to_main_screen.png", -1)
+            pasteImg(img, back_button, 438, 1338)
+
         
 
 
