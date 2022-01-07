@@ -29,6 +29,7 @@ typedef struct Node Queue_Node;
 Queue_Node *front;
 Queue_Node *tail;
 u_int16_t block[24];
+u_int16_t unsorted_block[24];
 
 pthread_t serialThread;
 
@@ -53,5 +54,7 @@ void readTouchpad(int);
 void processBlockData(void);
 
 void *UartLoop(void *);
+
+void sortBlocks(void);
 
 #endif /*SERIAL_SERVICE_H*/

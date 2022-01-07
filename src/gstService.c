@@ -30,8 +30,8 @@ int initGST(void) {
 int displayScreen(void) {
     /* Start playing */
     ret = gst_element_set_state (pipeline, GST_STATE_READY);
-    // usleep(500);
     ret = gst_element_set_state (pipeline, GST_STATE_PLAYING);
+    usleep(500);
 
     ret = gst_element_set_state (pipeline, GST_STATE_PAUSED);
     if (ret == GST_STATE_CHANGE_FAILURE) {

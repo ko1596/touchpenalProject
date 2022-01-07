@@ -34,9 +34,9 @@
 #define COMMAND_PATH "/home/root/touchPenalProject/"
 
 uint8_t PageStatus;
-char parkBK[8][1];
+uint8_t parkBK[8];
 uint8_t parkPage;
-
+uint8_t selectedBlock;
 
 void generateFrame(void);
 

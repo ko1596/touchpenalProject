@@ -3,7 +3,7 @@
 
 #include "serialService.h"
 
-int main(int argc, char *argv[]) {
+int main(void) {
     pthread_create(&serialThread, NULL, UartLoop, NULL);
 
     while(1){
@@ -12,7 +12,7 @@ int main(int argc, char *argv[]) {
         
         
         for(int i = 0; i < 24; i++){
-            if(i%6 == 0) printf("\n");
+            if(i%4 == 0) printf("\n");
             if(block[i] > 60000)
                 printf("[%2d]00000\t",i);
             else

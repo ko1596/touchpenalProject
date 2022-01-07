@@ -124,6 +124,7 @@ void processBlockData(void) {
 		switch (commandState)
 		{
 			case 0:
+				sortBlocks();
 				if(dataCommand == 0x12) commandState = 1;
 				break;
 			case 1:
@@ -132,11 +133,11 @@ void processBlockData(void) {
 			case 2:
 				if(count%2 == 0)
 				{
-					block[blockCount] = dataCommand;
+					unsorted_block[blockCount] = dataCommand;
 				}						
 				else
 				{
-					block[blockCount] |= (dataCommand << 8);
+					unsorted_block[blockCount] |= (dataCommand << 8);
 					blockCount++;
 				}
 
@@ -169,4 +170,12 @@ void *UartLoop(void *parm)
 
 	close(fd);
 	return 0;
+}
+
+void sortBlocks() {
+	for (int i = 0; i < 6; i++) {
+		for (int j = 0; j < 4; j++) {
+			block[i * 4 + j] = unsorted_block[(5 - i) + 6 * j];
+		}
+	}
 }

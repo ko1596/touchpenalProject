@@ -12,30 +12,19 @@ if disign_platform:
 else:
     WORK_DIR_PATH = "/home/user/JoeyLCD_DEV/touchpenalProject/src_py/"
 
-if os.path.isdir(WORK_DIR_PATH):
-    print("set work dir: " + WORK_DIR_PATH)
-else:
+if not os.path.isdir(WORK_DIR_PATH):
     print("Can't find dir" + WORK_DIR_PATH)
-
+    
 IMG_DIR_PATH = WORK_DIR_PATH + "image/"         #work dir
-if os.path.isdir(IMG_DIR_PATH):
-    print("set work dir: " + IMG_DIR_PATH)
-else:
+if not os.path.isdir(IMG_DIR_PATH):
     print("Can't find dir" + IMG_DIR_PATH)
-
 
 FONT_PATH = WORK_DIR_PATH + "NotoSansCJKtc-Bold.otf"    #font file
 
-if os.path.isfile(FONT_PATH):
-    print ("reading font: " + FONT_PATH)
-else:
+if not os.path.isfile(FONT_PATH):
     print ("no font file found" + FONT_PATH)
+    
 GENERATED_IMG_NAME = WORK_DIR_PATH + "frame.jpg"        #output file name
-print("setting output file path: " + GENERATED_IMG_NAME)
-
-if os.path.isfile(GENERATED_IMG_NAME):
-    os.remove(GENERATED_IMG_NAME)
-    print("File removed successfully")
 
 SCREEN_WEIDTH = 1200
 SCREEN_HEIGHT = 1600
@@ -58,51 +47,47 @@ def pasteImg(img, overlay, x, y):
 b,g,r,a = 0,0,0,0
 
 inputImg = IMG_DIR_PATH + sys.argv[1] +".png"
-if os.path.isfile(inputImg):
-    print ("reading image: " + inputImg)
-else:
+if not os.path.isfile(inputImg):
     print ("no image found")
+    
 
 img = cv2.imread(inputImg)
 
 if sys.argv[1] != "0":
     if sys.argv[1] == "1":
         selectBlockNum = int(sys.argv[2])
-        selectBlockImg = cv2.imread(IMG_DIR_PATH + "SELECT_PARKING_SPACE.png", -1)
+        selectBlockImg = cv2.imread(IMG_DIR_PATH + "select_parking_space_frame.png", -1)
 
-        pasteImg(img, selectBlockImg, int(selectBlockNum / 4) * 285 + 14, int(selectBlockNum % 4) * 130 + 14)
+        pasteImg(img, selectBlockImg, int(selectBlockNum % 2) * 600 + 20, int(selectBlockNum / 2) * 270 + 30)
         for i in range(8):
-            if sys.argv[i+3] == "0":
-                print("no image")
-            else:
-                
+            if sys.argv[i+3] != "0":                
                 if sys.argv[i+3] == "1":
-                        showblock = cv2.imread(IMG_DIR_PATH + "WAITING_FOR_PAYMENT.png", -1)
+                        showblock = cv2.imread(IMG_DIR_PATH + "waiting_for_payment.png", -1)
                 elif sys.argv[i+3] == "2":
                     showblock = cv2.imread(IMG_DIR_PATH + "expired.png", -1)
                 elif sys.argv[i+3] == "3":
-                    showblock = cv2.imread(IMG_DIR_PATH + "DEADLINE.png", -1)
+                    showblock = cv2.imread(IMG_DIR_PATH + "deadline.png", -1)
 
-                pasteImg(img, showblock, int(i / 4) * 285 + 123, int(i % 4) * 130 + 46)
+                pasteImg(img, showblock, int(i / 4) * 600 + 260, int(i % 4) * 270 + 100)
             
-        font = ImageFont.truetype(FONT_PATH, 28)
+        font = ImageFont.truetype(FONT_PATH, 45)
         img_pil = Image.fromarray(img)
         draw = ImageDraw.Draw(img_pil)
         text = sys.argv[11]
         w, h = draw.textsize(text, font)
-        draw.text(((img.shape[1]-w)/2, (img.shape[0]-108)),  sys.argv[11], font = font, fill = (49, 49, 49, 0))
+        draw.text(((img.shape[1]-w)/2, (img.shape[0]-220)),  sys.argv[11], font = font, fill = (49, 49, 49, 0))
         img = np.array(img_pil)
             
 
 
-    font = ImageFont.truetype(FONT_PATH, 30)
+    font = ImageFont.truetype(FONT_PATH, 55)
     img_pil = Image.fromarray(img)
     draw = ImageDraw.Draw(img_pil)
     text = time.strftime("%Y-%m-%d %H:%M", time.localtime())
 
     w, h = draw.textsize(text, font)
 
-    draw.text(((img.shape[1]-w)/2, (img.shape[0]-50)),  text, font = font, fill = (255, 255, 255, 0))
+    draw.text(((img.shape[1]-w)/2, (img.shape[0]-90)),  text, font = font, fill = (255, 255, 255, 0))
     
 
     img = np.array(img_pil)
