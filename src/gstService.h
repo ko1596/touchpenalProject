@@ -3,7 +3,7 @@
 
 #include <gst/gst.h>
 
-#define IMG_PATH "/home/root/touchPenalProject/frame.jpg"
+#define IMG_PATH "/home/root/gproject/frame.jpg"
 
 GstElement *pipeline, *jpdec, *imgf, *source, *sink;
 GstBus *bus;
