@@ -70,10 +70,10 @@ if sys.argv[1] != "0":
         block_name = sys.argv[5]
 
         if block_status == 1:
-            info = cv2.imread(IMG_DIR_PATH + "wait_for_payment_selected.png")
-            pasteImg(img, info, 202-info.shape[1]/2, 480)
+            info = cv2.imread(IMG_DIR_PATH + "wait_for_payment_selected.png", -1)
+            pasteImg(img, info, 0, 0)
         elif block_status == 2:
-            info = cv2.imread(IMG_DIR_PATH + "deadline.png")
+            info = cv2.imread(IMG_DIR_PATH + "deadline.png", -1)
 
         w, h = draw.textsize(last_time, font_last_time)
 
